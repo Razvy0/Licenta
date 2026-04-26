@@ -41,6 +41,7 @@ yarn-error.log*
 *.cmd
 *.sh
 *.ps1
+*.md
 
 # =========================
 # OS Files

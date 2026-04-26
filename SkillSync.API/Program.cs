@@ -124,6 +124,7 @@ builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ITimeTransactionService, TimeTransactionService>();
+builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
 
 // ---------- SignalR + Controllers ----------
 builder.Services.AddSignalR();
