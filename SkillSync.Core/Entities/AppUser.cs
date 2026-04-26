@@ -13,4 +13,5 @@ public class AppUser : IdentityUser
     public ICollection<Skill> Skills { get; set; } = new List<Skill>();
     public ICollection<Review> ReviewsReceived { get; set; } = new List<Review>();
     public ICollection<Review> ReviewsGiven { get; set; } = new List<Review>();
+    public ICollection<TimeTransaction> TimeTransactions { get; set; } = new List<TimeTransaction>();
 }

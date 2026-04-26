@@ -4,6 +4,7 @@ using SkillSync.Core.Enums;
 using SkillSync.Core.Exceptions;
 using SkillSync.Core.Interfaces.Repositories;
 using SkillSync.Core.Interfaces.Services;
+using SkillSync.Infrastructure.Data;
 
 namespace SkillSync.API.Services;
 
@@ -11,11 +12,15 @@ public class SwapService : ISwapService
 {
     private readonly ISwapRepository _swapRepo;
     private readonly ISkillRepository _skillRepo;
+    private readonly IUserRepository _userRepo;
+    private readonly AppDbContext _context;
 
-    public SwapService(ISwapRepository swapRepo, ISkillRepository skillRepo)
+    public SwapService(ISwapRepository swapRepo, ISkillRepository skillRepo, IUserRepository userRepo, AppDbContext context)
     {
         _swapRepo = swapRepo;
         _skillRepo = skillRepo;
+        _userRepo = userRepo;
+        _context = context;
     }
 
     public async Task<IEnumerable<SwapDto>> GetUserSwapsAsync(string userId)
@@ -38,18 +43,50 @@ public class SwapService : ISwapService
         if (requestedSkill.UserId == requesterId)
             throw new BadRequestException("You cannot request your own skill.");
 
-        var swap = new SwapRequest
-        {
-            RequesterId = requesterId,
-            ReceiverId = requestedSkill.UserId,
-            OfferedSkillId = dto.OfferedSkillId,
-            RequestedSkillId = dto.RequestedSkillId,
-            Status = SwapStatus.Pending
-        };
+        var requester = await _userRepo.GetByIdAsync(requesterId)
+            ?? throw new NotFoundException("User", requesterId);
 
-        await _swapRepo.AddAsync(swap);
-        var created = await _swapRepo.GetSwapWithDetailsAsync(swap.Id);
-        return MapToDto(created!);
+        if (requester.TimeBalance < 1)
+            throw new BadRequestException("Insufficient time balance to request a swap.");
+
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            requester.TimeBalance -= 1;
+            await _userRepo.UpdateAsync(requester);
+
+            var swap = new SwapRequest
+            {
+                RequesterId = requesterId,
+                ReceiverId = requestedSkill.UserId,
+                OfferedSkillId = dto.OfferedSkillId,
+                RequestedSkillId = dto.RequestedSkillId,
+                Status = SwapStatus.Pending
+            };
+
+            await _swapRepo.AddAsync(swap);
+
+            var timeTransaction = new TimeTransaction
+            {
+                UserId = requesterId,
+                Amount = -1,
+                TransactionType = TransactionType.EscrowHold,
+                SwapRequestId = swap.Id
+            };
+            
+            _context.TimeTransactions.Add(timeTransaction);
+            await _context.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+
+            var created = await _swapRepo.GetSwapWithDetailsAsync(swap.Id);
+            return MapToDto(created!);
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 
     public async Task<SwapDto> UpdateSwapStatusAsync(string userId, int swapId, UpdateSwapStatusDto dto)
@@ -72,11 +109,41 @@ public class SwapService : ISwapService
         if (dto.Status == SwapStatus.Cancelled && swap.Status != SwapStatus.Pending)
             throw new BadRequestException("Only pending swaps can be cancelled.");
 
-        swap.Status = dto.Status;
-        swap.UpdatedAt = DateTime.UtcNow;
-        await _swapRepo.UpdateAsync(swap);
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            swap.Status = dto.Status;
+            swap.UpdatedAt = DateTime.UtcNow;
+            await _swapRepo.UpdateAsync(swap);
 
-        return MapToDto(swap);
+            if (dto.Status == SwapStatus.Rejected || dto.Status == SwapStatus.Cancelled)
+            {
+                var requester = await _userRepo.GetByIdAsync(swap.RequesterId);
+                if (requester != null)
+                {
+                    requester.TimeBalance += 1;
+                    await _userRepo.UpdateAsync(requester);
+
+                    var timeTx = new TimeTransaction
+                    {
+                        UserId = swap.RequesterId,
+                        Amount = 1,
+                        TransactionType = TransactionType.Refunded,
+                        SwapRequestId = swap.Id
+                    };
+                    _context.TimeTransactions.Add(timeTx);
+                    await _context.SaveChangesAsync();
+                }
+            }
+
+            await transaction.CommitAsync();
+            return MapToDto(swap);
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 
     public async Task<SwapDto> ProposeTimeSlotAsync(string userId, int swapId, ProposeTimeSlotDto dto)
@@ -139,22 +206,67 @@ public class SwapService : ISwapService
             && swap.Status != SwapStatus.ValidatedByReceiver)
             throw new BadRequestException("Swap must be scheduled before it can be validated.");
 
-        if (swap.RequesterId == userId)
-            swap.RequesterValidated = true;
-        else
-            swap.ReceiverValidated = true;
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            if (swap.RequesterId == userId)
+                swap.RequesterValidated = true;
+            else
+                swap.ReceiverValidated = true;
 
-        if (swap.RequesterValidated && swap.ReceiverValidated)
-            swap.Status = SwapStatus.Completed;
-        else if (swap.RequesterValidated)
-            swap.Status = SwapStatus.ValidatedByRequester;
-        else
-            swap.Status = SwapStatus.ValidatedByReceiver;
+            bool isNewlyCompleted = false;
 
-        swap.UpdatedAt = DateTime.UtcNow;
-        await _swapRepo.UpdateAsync(swap);
+            if (swap.RequesterValidated && swap.ReceiverValidated)
+            {
+                swap.Status = SwapStatus.Completed;
+                isNewlyCompleted = true;
+            }
+            else if (swap.RequesterValidated)
+                swap.Status = SwapStatus.ValidatedByRequester;
+            else
+                swap.Status = SwapStatus.ValidatedByReceiver;
 
-        return MapToDto(swap);
+            swap.UpdatedAt = DateTime.UtcNow;
+            await _swapRepo.UpdateAsync(swap);
+
+            if (isNewlyCompleted)
+            {
+                var receiver = await _userRepo.GetByIdAsync(swap.ReceiverId);
+                if (receiver != null)
+                {
+                    receiver.TimeBalance += 1;
+                    await _userRepo.UpdateAsync(receiver);
+
+                    var earnedTx = new TimeTransaction
+                    {
+                        UserId = swap.ReceiverId,
+                        Amount = 1,
+                        TransactionType = TransactionType.Earned,
+                        SwapRequestId = swap.Id
+                    };
+                    
+                    var spentTx = new TimeTransaction
+                    {
+                        UserId = swap.RequesterId,
+                        Amount = 0, // Keep 0 to signify completion, Escrow is already deducted
+                        TransactionType = TransactionType.Spent,
+                        SwapRequestId = swap.Id
+                    };
+
+                    _context.TimeTransactions.Add(earnedTx);
+                    _context.TimeTransactions.Add(spentTx);
+                    await _context.SaveChangesAsync();
+                }
+            }
+
+            await transaction.CommitAsync();
+            return MapToDto(swap);
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 
     public async Task<SwapDto> InvalidateSwapAsync(string userId, int swapId)

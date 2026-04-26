@@ -13,6 +13,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<SwapRequest> SwapRequests => Set<SwapRequest>();
     public DbSet<Message> Messages => Set<Message>();
     public DbSet<Review> Reviews => Set<Review>();
+    public DbSet<TimeTransaction> TimeTransactions => Set<TimeTransaction>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

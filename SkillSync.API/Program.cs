@@ -113,6 +113,7 @@ builder.Services.AddScoped<ISwapRepository, SwapRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<ITimeTransactionRepository, TimeTransactionRepository>();
 
 // ---------- Services ----------
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -122,6 +123,7 @@ builder.Services.AddScoped<ISwapService, SwapService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<ITimeTransactionService, TimeTransactionService>();
 
 // ---------- SignalR + Controllers ----------
 builder.Services.AddSignalR();

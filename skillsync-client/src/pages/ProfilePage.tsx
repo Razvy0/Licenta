@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useMe, useUpdateProfile } from '@/hooks/useUsers';
 import { useMySkills, useDeleteSkill } from '@/hooks/useSkills';
 import AddSkillModal from '@/components/AddSkillModal';
+import TimeTransactionHistory from '@/components/TimeTransactionHistory';
 import { Plus, Trash2, Pencil, Check, X } from 'lucide-react';
 
 export default function ProfilePage() {
@@ -151,6 +152,11 @@ export default function ProfilePage() {
       ) : (
         <p className="text-gray-500">No skills added yet. Click "Add Skill" to get started!</p>
       )}
+
+      {/* Transaction History Section */}
+      <div className="mt-8">
+        <TimeTransactionHistory />
+      </div>
 
       {showAddSkill && <AddSkillModal onClose={() => setShowAddSkill(false)} />}
     </div>
