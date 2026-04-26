@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { useSwaps, useUpdateSwapStatus, useProposeTimeSlot, usePickTime, useValidateSwap, useInvalidateSwap } from '@/hooks/useSwaps';
 import { useAuthStore } from '@/stores/authStore';
 import { Swap } from '@/services/swapService';
-import { Calendar, Check, X, Clock, ArrowRightLeft, Star } from 'lucide-react';
+import { Calendar, Check, X, Clock, ArrowRightLeft, Star, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ReviewModal from '@/components/ReviewModal';
+import ReportModal from '@/components/ReportModal';
 import { useHasReviewed } from '@/hooks/useReviews';
 
 export default function SwapsPage() {
@@ -20,6 +21,7 @@ export default function SwapsPage() {
   ) ?? [];
   const completed = swaps?.filter((s) => s.status === 'Completed') ?? [];
   const rejected = swaps?.filter((s) => s.status === 'Rejected' || s.status === 'Cancelled') ?? [];
+  const disputed = swaps?.filter((s) => s.status === 'Disputed') ?? [];
 
   return (
     <div>
@@ -62,6 +64,18 @@ export default function SwapsPage() {
           {rejected.map((swap) => (
             <SwapRow key={swap.id} swap={swap} userId={userId!}>
               <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-red-100 text-red-700">{swap.status}</span>
+            </SwapRow>
+          ))}
+        </Section>
+      )}
+
+      {disputed.length > 0 && (
+        <Section title="Disputed (Under Review)">
+          {disputed.map((swap) => (
+            <SwapRow key={swap.id} swap={swap} userId={userId!}>
+              <span className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-orange-100 text-orange-800">
+                <AlertTriangle size={12} /> Disputed
+              </span>
             </SwapRow>
           ))}
         </Section>
@@ -117,12 +131,22 @@ function AcceptedSwapCard({ swap, userId }: { swap: Swap; userId: string }) {
   const [slotStart, setSlotStart] = useState('');
   const [slotEnd, setSlotEnd] = useState('');
   const [pickedTime, setPickedTime] = useState('');
+  const [showReport, setShowReport] = useState(false);
 
   const hasTimeSlot = swap.timeSlotStart && swap.timeSlotEnd;
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
-      <SwapHeader swap={swap} userId={userId} />
+      <div className="flex justify-between items-start">
+        <SwapHeader swap={swap} userId={userId} />
+        <button
+          onClick={() => setShowReport(true)}
+          className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+          title="Report Issue"
+        >
+          <AlertTriangle size={16} />
+        </button>
+      </div>
       <span className="inline-block text-xs font-medium px-2.5 py-1 rounded-full bg-green-100 text-green-700">Accepted</span>
 
       {isReceiver && !hasTimeSlot && (
@@ -185,6 +209,7 @@ function AcceptedSwapCard({ swap, userId }: { swap: Swap; userId: string }) {
           </div>
         </div>
       )}
+      <ReportModal isOpen={showReport} onClose={() => setShowReport(false)} swapRequestId={swap.id} />
     </div>
   );
 }
@@ -196,10 +221,20 @@ function ScheduledSwapCard({ swap, userId }: { swap: Swap; userId: string }) {
   const isRequester = swap.requesterId === userId;
   const hasValidated = isRequester ? swap.requesterValidated : swap.receiverValidated;
   const otherValidated = isRequester ? swap.receiverValidated : swap.requesterValidated;
+  const [showReport, setShowReport] = useState(false);
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
-      <SwapHeader swap={swap} userId={userId} />
+      <div className="flex justify-between items-start">
+        <SwapHeader swap={swap} userId={userId} />
+        <button
+          onClick={() => setShowReport(true)}
+          className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+          title="Report Issue"
+        >
+          <AlertTriangle size={16} />
+        </button>
+      </div>
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-purple-100 text-purple-700">
           Scheduled — {formatDateTime(swap.scheduledDate!)}
@@ -244,6 +279,7 @@ function ScheduledSwapCard({ swap, userId }: { swap: Swap; userId: string }) {
           </p>
         )}
       </div>
+      <ReportModal isOpen={showReport} onClose={() => setShowReport(false)} swapRequestId={swap.id} />
     </div>
   );
 }
@@ -251,6 +287,7 @@ function ScheduledSwapCard({ swap, userId }: { swap: Swap; userId: string }) {
 /* ─── Completed: Leave Review ─── */
 function CompletedSwapCard({ swap, userId }: { swap: Swap; userId: string }) {
   const [showReview, setShowReview] = useState(false);
+  const [showReport, setShowReport] = useState(false);
   const { data: hasReviewed } = useHasReviewed(swap.id);
   const otherName = swap.requesterId === userId ? swap.receiverName : swap.requesterName;
   const otherUserId = swap.requesterId === userId ? swap.receiverId : swap.requesterId;
@@ -282,6 +319,13 @@ function CompletedSwapCard({ swap, userId }: { swap: Swap; userId: string }) {
             <Star size={14} /> Leave Review
           </button>
         )}
+        <button
+          onClick={() => setShowReport(true)}
+          className="flex items-center gap-1 text-sm px-3 py-1.5 text-gray-700 border border-gray-300 bg-white hover:bg-gray-50 rounded-lg"
+          title="Report Issue"
+        >
+          <AlertTriangle size={14} className="text-red-500" /> Report
+        </button>
       </div>
       {showReview && (
         <ReviewModal
@@ -290,6 +334,7 @@ function CompletedSwapCard({ swap, userId }: { swap: Swap; userId: string }) {
           onClose={() => setShowReview(false)}
         />
       )}
+      <ReportModal isOpen={showReport} onClose={() => setShowReport(false)} swapRequestId={swap.id} />
     </div>
   );
 }

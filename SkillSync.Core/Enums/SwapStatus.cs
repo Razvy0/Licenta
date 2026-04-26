@@ -9,5 +9,6 @@ public enum SwapStatus
     ValidatedByReceiver,
     Completed,
     Rejected,
-    Cancelled
+    Cancelled,
+    Disputed
 }

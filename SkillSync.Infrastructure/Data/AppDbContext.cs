@@ -14,6 +14,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<Message> Messages => Set<Message>();
     public DbSet<Review> Reviews => Set<Review>();
     public DbSet<TimeTransaction> TimeTransactions => Set<TimeTransaction>();
+    public DbSet<Dispute> Disputes => Set<Dispute>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

@@ -27,4 +27,5 @@ public class SwapRequest
     public Skill OfferedSkill { get; set; } = null!;
     public Skill RequestedSkill { get; set; } = null!;
     public ICollection<Review> Reviews { get; set; } = new List<Review>();
+    public ICollection<Dispute> Disputes { get; set; } = new List<Dispute>();
 }

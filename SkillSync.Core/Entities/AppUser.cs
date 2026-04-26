@@ -14,4 +14,6 @@ public class AppUser : IdentityUser
     public ICollection<Review> ReviewsReceived { get; set; } = new List<Review>();
     public ICollection<Review> ReviewsGiven { get; set; } = new List<Review>();
     public ICollection<TimeTransaction> TimeTransactions { get; set; } = new List<TimeTransaction>();
+    public ICollection<Dispute> DisputesReported { get; set; } = new List<Dispute>();
+    public ICollection<Dispute> DisputesReceived { get; set; } = new List<Dispute>();
 }
