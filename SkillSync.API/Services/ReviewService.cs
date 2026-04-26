@@ -79,4 +79,32 @@ public class ReviewService : IReviewService
         Comment = r.Comment,
         CreatedAt = r.CreatedAt
     };
+
+    public async Task<bool> HasReviewedSwapAsync(string reviewerId, int swapRequestId)
+        => await _reviewRepo.HasReviewedSwapAsync(reviewerId, swapRequestId);
+
+    public async Task<IEnumerable<ReviewableSwapDto>> GetReviewableSwapsAsync(string currentUserId, string otherUserId)
+    {
+        var swaps = await _swapRepo.GetSwapsByUserIdAsync(currentUserId);
+        var completedWithOther = swaps.Where(s =>
+            s.Status == SwapStatus.Completed &&
+            ((s.RequesterId == currentUserId && s.ReceiverId == otherUserId) ||
+             (s.ReceiverId == currentUserId && s.RequesterId == otherUserId)));
+
+        var result = new List<ReviewableSwapDto>();
+        foreach (var swap in completedWithOther)
+        {
+            if (!await _reviewRepo.HasReviewedSwapAsync(currentUserId, swap.Id))
+            {
+                result.Add(new ReviewableSwapDto
+                {
+                    SwapId = swap.Id,
+                    OfferedSkillTitle = swap.OfferedSkill?.Title ?? "",
+                    RequestedSkillTitle = swap.RequestedSkill?.Title ?? "",
+                    CompletedAt = swap.CreatedAt
+                });
+            }
+        }
+        return result;
+    }
 }

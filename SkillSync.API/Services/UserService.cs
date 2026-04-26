@@ -45,4 +45,26 @@ public class UserService : IUserService
         await _userRepo.UpdateAsync(user);
         return await GetProfileAsync(userId);
     }
+
+    public async Task<IEnumerable<UserSearchResultDto>> SearchUsersAsync(UserSearchParams searchParams)
+    {
+        var users = await _userRepo.SearchUsersAsync(
+            searchParams.Name, searchParams.Skill,
+            searchParams.Page, searchParams.PageSize);
+
+        return users.Select(u => new UserSearchResultDto
+        {
+            Id = u.Id,
+            FullName = u.FullName,
+            Bio = u.Bio,
+            Rating = u.Rating,
+            Skills = u.Skills.Select(s => new SkillSummaryDto
+            {
+                Id = s.Id,
+                Title = s.Title,
+                IsOffering = s.IsOffering,
+                CategoryName = s.Category?.Name ?? ""
+            }).ToList()
+        });
+    }
 }

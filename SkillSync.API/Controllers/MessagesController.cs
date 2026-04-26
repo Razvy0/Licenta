@@ -15,6 +15,22 @@ public class MessagesController : ControllerBase
 
     public MessagesController(IMessageService messageService) => _messageService = messageService;
 
+    [HttpGet("conversations")]
+    public async Task<IActionResult> GetConversations()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var conversations = await _messageService.GetConversationPartnersAsync(userId);
+        return Ok(conversations);
+    }
+
+    [HttpGet("unread/count")]
+    public async Task<IActionResult> GetUnreadCount()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var count = await _messageService.GetUnreadCountAsync(userId);
+        return Ok(new { count });
+    }
+
     [HttpGet("{otherUserId}")]
     public async Task<IActionResult> GetConversation(string otherUserId)
     {

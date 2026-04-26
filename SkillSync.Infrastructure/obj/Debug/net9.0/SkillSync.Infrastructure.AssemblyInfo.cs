@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SkillSync.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+22b4b499c230728bc2e0be0a3d9951b89bf4b20d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+724e2a80813863360f68b0a63170bfc177f598c5")]
 [assembly: System.Reflection.AssemblyProductAttribute("SkillSync.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SkillSync.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

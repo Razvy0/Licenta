@@ -38,4 +38,36 @@ public class SwapsController : ControllerBase
         var swap = await _swapService.UpdateSwapStatusAsync(userId, id, dto);
         return Ok(swap);
     }
+
+    [HttpPut("{id}/timeslot")]
+    public async Task<IActionResult> ProposeTimeSlot(int id, [FromBody] ProposeTimeSlotDto dto)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var swap = await _swapService.ProposeTimeSlotAsync(userId, id, dto);
+        return Ok(swap);
+    }
+
+    [HttpPut("{id}/pick-time")]
+    public async Task<IActionResult> PickTime(int id, [FromBody] PickTimeDto dto)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var swap = await _swapService.PickTimeAsync(userId, id, dto);
+        return Ok(swap);
+    }
+
+    [HttpPut("{id}/validate")]
+    public async Task<IActionResult> Validate(int id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var swap = await _swapService.ValidateSwapAsync(userId, id);
+        return Ok(swap);
+    }
+
+    [HttpPut("{id}/invalidate")]
+    public async Task<IActionResult> Invalidate(int id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var swap = await _swapService.InvalidateSwapAsync(userId, id);
+        return Ok(swap);
+    }
 }

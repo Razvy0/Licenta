@@ -63,6 +63,12 @@ public class SkillService : ISkillService
         await _skillRepo.DeleteAsync(skill);
     }
 
+    public async Task<IEnumerable<SkillDto>> GetUserSkillsAsync(string userId)
+    {
+        var skills = await _skillRepo.GetSkillsByUserIdAsync(userId);
+        return skills.Select(MapToDto);
+    }
+
     private static SkillDto MapToDto(Skill s) => new()
     {
         Id = s.Id,

@@ -13,5 +13,9 @@ public class SwapDto
     public string RequestedSkillTitle { get; set; } = string.Empty;
     public SwapStatus Status { get; set; }
     public DateTime? ScheduledDate { get; set; }
+    public DateTime? TimeSlotStart { get; set; }
+    public DateTime? TimeSlotEnd { get; set; }
+    public bool RequesterValidated { get; set; }
+    public bool ReceiverValidated { get; set; }
     public DateTime CreatedAt { get; set; }
 }

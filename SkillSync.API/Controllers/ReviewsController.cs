@@ -22,6 +22,22 @@ public class ReviewsController : ControllerBase
         return Ok(reviews);
     }
 
+    [HttpGet("check/{swapRequestId}")]
+    public async Task<IActionResult> HasReviewed(int swapRequestId)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var hasReviewed = await _reviewService.HasReviewedSwapAsync(userId, swapRequestId);
+        return Ok(new { hasReviewed });
+    }
+
+    [HttpGet("reviewable/{otherUserId}")]
+    public async Task<IActionResult> GetReviewableSwaps(string otherUserId)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var swaps = await _reviewService.GetReviewableSwapsAsync(userId, otherUserId);
+        return Ok(swaps);
+    }
+
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateReviewDto dto)
     {

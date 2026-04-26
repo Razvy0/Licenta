@@ -21,6 +21,22 @@ public class SkillsController : ControllerBase
         return Ok(skills);
     }
 
+    [Authorize]
+    [HttpGet("my")]
+    public async Task<IActionResult> GetMySkills()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var skills = await _skillService.GetUserSkillsAsync(userId);
+        return Ok(skills);
+    }
+
+    [HttpGet("user/{userId}")]
+    public async Task<IActionResult> GetUserSkills(string userId)
+    {
+        var skills = await _skillService.GetUserSkillsAsync(userId);
+        return Ok(skills);
+    }
+
     [HttpGet("{id}")]
     public async Task<IActionResult> GetSkill(int id)
     {

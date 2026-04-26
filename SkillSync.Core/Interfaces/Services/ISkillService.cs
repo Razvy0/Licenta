@@ -8,4 +8,5 @@ public interface ISkillService
     Task<SkillDto> GetSkillByIdAsync(int id);
     Task<SkillDto> CreateSkillAsync(string userId, CreateSkillDto dto);
     Task DeleteSkillAsync(string userId, int id);
+    Task<IEnumerable<SkillDto>> GetUserSkillsAsync(string userId);
 }

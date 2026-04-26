@@ -263,6 +263,80 @@ namespace SkillSync.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("Categories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Description = "Programming, software development, and IT skills",
+                            Name = "Technology"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Description = "Physics, chemistry, biology, and other natural sciences",
+                            Name = "Sciences"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Description = "Algebra, calculus, statistics, and applied mathematics",
+                            Name = "Mathematics"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Description = "Foreign languages, translation, and linguistics",
+                            Name = "Languages"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Description = "Instruments, music theory, singing, and production",
+                            Name = "Music"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Description = "Exercise, personal training, yoga, and sports",
+                            Name = "Fitness"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Description = "Drawing, painting, graphic design, and photography",
+                            Name = "Art & Design"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Description = "World history, civilizations, and historical research",
+                            Name = "History"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Description = "Creative writing, poetry, and literary analysis",
+                            Name = "Literature"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Description = "Marketing, finance, entrepreneurship, and management",
+                            Name = "Business"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Description = "Culinary arts, baking, and nutrition",
+                            Name = "Cooking"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            Description = "Woodworking, sewing, knitting, and home improvement",
+                            Name = "Crafts & DIY"
+                        });
                 });
 
             modelBuilder.Entity("SkillSync.Core.Entities.Message", b =>
@@ -403,6 +477,9 @@ namespace SkillSync.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<bool>("ReceiverValidated")
+                        .HasColumnType("boolean");
+
                     b.Property<int>("RequestedSkillId")
                         .HasColumnType("integer");
 
@@ -410,12 +487,21 @@ namespace SkillSync.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<bool>("RequesterValidated")
+                        .HasColumnType("boolean");
+
                     b.Property<DateTime?>("ScheduledDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<DateTime?>("TimeSlotEnd")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("TimeSlotStart")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");

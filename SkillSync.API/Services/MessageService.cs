@@ -52,6 +52,22 @@ public class MessageService : IMessageService
     public async Task MarkAsReadAsync(string senderId, string receiverId)
         => await _messageRepo.MarkAsReadAsync(senderId, receiverId);
 
+    public async Task<IEnumerable<ConversationDto>> GetConversationPartnersAsync(string userId)
+    {
+        var conversations = await _messageRepo.GetConversationPartnersAsync(userId);
+        return conversations.Select(c => new ConversationDto
+        {
+            UserId = c.Partner.Id,
+            FullName = c.Partner.FullName,
+            LastMessage = c.LastMessage.Content,
+            LastMessageTimestamp = c.LastMessage.Timestamp,
+            UnreadCount = c.UnreadCount
+        });
+    }
+
+    public async Task<int> GetUnreadCountAsync(string userId)
+        => await _messageRepo.GetUnreadCountAsync(userId);
+
     private static MessageDto MapToDto(Message m) => new()
     {
         Id = m.Id,
