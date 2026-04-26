@@ -1,20 +1,49 @@
-# Environment files
-.env
-*.env
+# =========================
+# Backend (.NET Core)
+# =========================
+[Bb]in/
+[Oo]bj/
+[Ll]ogs/
 
-# .NET
-bin/
-obj/
-*.user
-*.suo
-*.cache
-*.dll
-
-# Node
-node_modules/
-dist/
-
-# IDE
+# Visual Studio / IDEs
 .vs/
 .vscode/
-*.swp
+.idea/
+*.user
+*.suo
+
+# =========================
+# Frontend (React / Vite)
+# =========================
+node_modules/
+dist/
+dist-ssr/
+build/
+.eslintcache
+*.tsbuildinfo
+
+# npm/yarn logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# =========================
+# Environment Variables
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# Starting Scripts
+# =========================
+*.bat
+*.cmd
+*.sh
+*.ps1
+
+# =========================
+# OS Files
+# =========================
+.DS_Store
+Thumbs.db
