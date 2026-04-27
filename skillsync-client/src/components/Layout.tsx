@@ -1,12 +1,13 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
 import { useUnreadCount } from '@/hooks/useMessages';
-import { Home, Compass, Repeat, User, LogOut, MessageSquare } from 'lucide-react';
+import { Home, Compass, Repeat, User, LogOut, MessageSquare, AlertTriangle } from 'lucide-react';
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: Home },
   { to: '/explore', label: 'Explore', icon: Compass },
   { to: '/swaps', label: 'Swaps', icon: Repeat },
+  { to: '/disputes', label: 'Disputes', icon: AlertTriangle },
   { to: '/messages', label: 'Messages', icon: MessageSquare, badge: true },
   { to: '/profile', label: 'Profile', icon: User },
 ];

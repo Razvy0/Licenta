@@ -127,6 +127,7 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ITimeTransactionService, TimeTransactionService>();
 builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
 builder.Services.AddScoped<IDisputeService, DisputeService>();
+builder.Services.AddScoped<DbSeeder>();
 
 // ---------- SignalR + Controllers ----------
 builder.Services.AddSignalR();
@@ -135,6 +136,13 @@ builder.Services.AddControllers()
         new System.Text.Json.Serialization.JsonStringEnumConverter()));
 
 var app = builder.Build();
+
+// ---------- Seed Database ----------
+using (var scope = app.Services.CreateScope())
+{
+    var seeder = scope.ServiceProvider.GetRequiredService<DbSeeder>();
+    await seeder.SeedAsync();
+}
 
 // ---------- Middleware pipeline ----------
 app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
