@@ -25,7 +25,7 @@ public class UserRepository : IUserRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task<IEnumerable<AppUser>> SearchUsersAsync(string? name, string? skill, int page, int pageSize)
+    public async Task<(IEnumerable<AppUser> Items, int TotalCount)> SearchUsersAsync(string? name, string? skill, int page, int pageSize)
     {
         var query = _context.Users
             .Include(u => u.Skills).ThenInclude(s => s.Category)
@@ -50,10 +50,14 @@ public class UserRepository : IUserRepository
                 || s.Category.Name.ToLower().Contains(skill.ToLower())));
         }
 
-        return await query
+        var totalCount = await query.CountAsync();
+
+        var items = await query
             .OrderBy(u => u.FullName)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
+            
+        return (items, totalCount);
     }
 }

@@ -1,3 +1,4 @@
+using SkillSync.Core.DTOs.Common;
 using SkillSync.Core.DTOs.Users;
 using SkillSync.Core.Exceptions;
 using SkillSync.Core.Interfaces.Repositories;
@@ -46,13 +47,13 @@ public class UserService : IUserService
         return await GetProfileAsync(userId);
     }
 
-    public async Task<IEnumerable<UserSearchResultDto>> SearchUsersAsync(UserSearchParams searchParams)
+    public async Task<PagedResult<UserSearchResultDto>> SearchUsersAsync(UserSearchParams searchParams)
     {
-        var users = await _userRepo.SearchUsersAsync(
+        var (users, totalCount) = await _userRepo.SearchUsersAsync(
             searchParams.Name, searchParams.Skill,
             searchParams.Page, searchParams.PageSize);
 
-        return users.Select(u => new UserSearchResultDto
+        var items = users.Select(u => new UserSearchResultDto
         {
             Id = u.Id,
             FullName = u.FullName,
@@ -66,5 +67,11 @@ public class UserService : IUserService
                 CategoryName = s.Category?.Name ?? ""
             }).ToList()
         });
+        
+        return new PagedResult<UserSearchResultDto>
+        {
+            Items = items,
+            TotalCount = totalCount
+        };
     }
 }

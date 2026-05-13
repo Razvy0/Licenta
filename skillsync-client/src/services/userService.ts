@@ -37,6 +37,11 @@ export interface UserSearchParams {
     pageSize?: number;
 }
 
+export interface PagedResult<T> {
+  items: T[];
+  totalCount: number;
+}
+
 export const userService = {
     getMe: () =>
         api.get<UserProfile>('/users/me'),
@@ -45,5 +50,5 @@ export const userService = {
     updateProfile: (dto: UpdateProfileDto) =>
         api.put<UserProfile>('/users/profile', dto),
     searchUsers: (params?: UserSearchParams) =>
-        api.get<UserSearchResult[]>('/users/search', { params }),
+        api.get<PagedResult<UserSearchResult>>('/users/search', { params }),
 };

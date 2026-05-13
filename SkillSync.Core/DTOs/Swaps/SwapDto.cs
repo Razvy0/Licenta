@@ -18,4 +18,5 @@ public class SwapDto
     public bool RequesterValidated { get; set; }
     public bool ReceiverValidated { get; set; }
     public DateTime CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
 }

@@ -7,7 +7,9 @@ interface AuthState {
   email: string | null;
   fullName: string | null;
   isAuthenticated: boolean;
+  lastSeenSwapsAt: string | null;
   setAuth: (data: { token: string; userId: string; email: string; fullName: string }) => void;
+  setLastSeenSwapsAt: (value: string) => void;
   logout: () => void;
 }
 
@@ -19,6 +21,7 @@ export const useAuthStore = create<AuthState>()(
       email: null,
       fullName: null,
       isAuthenticated: false,
+      lastSeenSwapsAt: null,
       setAuth: (data) =>
         set({
           token: data.token,
@@ -27,6 +30,7 @@ export const useAuthStore = create<AuthState>()(
           fullName: data.fullName,
           isAuthenticated: true,
         }),
+      setLastSeenSwapsAt: (value) => set({ lastSeenSwapsAt: value }),
       logout: () =>
         set({
           token: null,
@@ -34,6 +38,7 @@ export const useAuthStore = create<AuthState>()(
           email: null,
           fullName: null,
           isAuthenticated: false,
+          lastSeenSwapsAt: null,
         }),
     }),
     { name: 'skillsync-auth' }

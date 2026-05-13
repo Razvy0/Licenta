@@ -310,6 +310,7 @@ public class SwapService : ISwapService
         TimeSlotEnd = s.TimeSlotEnd,
         RequesterValidated = s.RequesterValidated,
         ReceiverValidated = s.ReceiverValidated,
-        CreatedAt = s.CreatedAt
+        CreatedAt = s.CreatedAt,
+        UpdatedAt = s.UpdatedAt ?? s.CreatedAt
     };
 }

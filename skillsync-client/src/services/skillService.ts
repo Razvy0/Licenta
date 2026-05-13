@@ -1,4 +1,5 @@
 import api from './api';
+import { PagedResult } from './userService';
 
 export interface Skill {
   id: number;
@@ -30,7 +31,7 @@ export interface SkillQueryParams {
 }
 
 export const skillService = {
-  getSkills: (params?: SkillQueryParams) => api.get<Skill[]>('/skills', { params }),
+  getSkills: (params?: SkillQueryParams) => api.get<PagedResult<Skill>>('/skills', { params }),
   getSkill: (id: number) => api.get<Skill>(`/skills/${id}`),
   getMySkills: () => api.get<Skill[]>('/skills/my'),
   getUserSkills: (userId: string) => api.get<Skill[]>(`/skills/user/${userId}`),

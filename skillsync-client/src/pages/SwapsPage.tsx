@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSwaps, useUpdateSwapStatus, useProposeTimeSlot, usePickTime, useValidateSwap, useInvalidateSwap } from '@/hooks/useSwaps';
 import { useAuthStore } from '@/stores/authStore';
 import { Swap } from '@/services/swapService';
@@ -10,7 +10,12 @@ import { useHasReviewed } from '@/hooks/useReviews';
 
 export default function SwapsPage() {
   const userId = useAuthStore((s) => s.userId);
+  const setLastSeenSwapsAt = useAuthStore((s) => s.setLastSeenSwapsAt);
   const { data: swaps, isLoading } = useSwaps();
+
+  useEffect(() => {
+    setLastSeenSwapsAt(new Date().toISOString());
+  }, [setLastSeenSwapsAt]);
 
   if (isLoading) return <p className="text-gray-500">Loading swaps...</p>;
 
@@ -133,6 +138,17 @@ function AcceptedSwapCard({ swap, userId }: { swap: Swap; userId: string }) {
   const [pickedTime, setPickedTime] = useState('');
   const [showReport, setShowReport] = useState(false);
 
+  const handleSlotStartChange = (value: string) => {
+    setSlotStart(value);
+    if (!value && slotEnd) {
+      setSlotEnd('');
+      return;
+    }
+    if (slotEnd && value && slotEnd < value) {
+      setSlotEnd(value);
+    }
+  };
+
   const hasTimeSlot = swap.timeSlotStart && swap.timeSlotEnd;
 
   return (
@@ -155,12 +171,13 @@ function AcceptedSwapCard({ swap, userId }: { swap: Swap; userId: string }) {
           <div className="flex gap-2 items-end flex-wrap">
             <label className="text-xs text-gray-500">
               From
-              <input type="datetime-local" value={slotStart} onChange={(e) => setSlotStart(e.target.value)}
+              <input type="datetime-local" value={slotStart} onChange={(e) => handleSlotStartChange(e.target.value)}
                 className="block mt-1 px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none" />
             </label>
             <label className="text-xs text-gray-500">
               To
               <input type="datetime-local" value={slotEnd} onChange={(e) => setSlotEnd(e.target.value)}
+                min={slotStart || undefined}
                 className="block mt-1 px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none" />
             </label>
             <button

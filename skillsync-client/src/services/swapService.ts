@@ -15,6 +15,7 @@ export interface Swap {
   requesterValidated: boolean;
   receiverValidated: boolean;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface CreateSwapDto {

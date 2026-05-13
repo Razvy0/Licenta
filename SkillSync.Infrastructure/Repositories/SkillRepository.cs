@@ -9,7 +9,7 @@ public class SkillRepository : Repository<Skill>, ISkillRepository
 {
     public SkillRepository(AppDbContext context) : base(context) { }
 
-    public async Task<IEnumerable<Skill>> GetSkillsWithDetailsAsync(
+    public async Task<(IEnumerable<Skill> Items, int TotalCount)> GetSkillsWithDetailsAsync(
         string? category, string? search, bool? isOffering, int page, int pageSize)
     {
         var query = _dbSet
@@ -27,11 +27,15 @@ public class SkillRepository : Repository<Skill>, ISkillRepository
         if (isOffering.HasValue)
             query = query.Where(s => s.IsOffering == isOffering.Value);
 
-        return await query
+        var totalCount = await query.CountAsync();
+
+        var items = await query
             .OrderByDescending(s => s.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
+
+        return (items, totalCount);
     }
 
     public async Task<IEnumerable<Skill>> GetSkillsByUserIdAsync(string userId)

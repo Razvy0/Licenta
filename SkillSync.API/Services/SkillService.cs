@@ -1,3 +1,4 @@
+using SkillSync.Core.DTOs.Common;
 using SkillSync.Core.DTOs.Skills;
 using SkillSync.Core.Entities;
 using SkillSync.Core.Exceptions;
@@ -17,13 +18,17 @@ public class SkillService : ISkillService
         _categoryRepo = categoryRepo;
     }
 
-    public async Task<IEnumerable<SkillDto>> GetSkillsAsync(SkillQueryParams queryParams)
+    public async Task<PagedResult<SkillDto>> GetSkillsAsync(SkillQueryParams queryParams)
     {
-        var skills = await _skillRepo.GetSkillsWithDetailsAsync(
+        var (items, totalCount) = await _skillRepo.GetSkillsWithDetailsAsync(
             queryParams.Category, queryParams.Search, queryParams.IsOffering,
             queryParams.Page, queryParams.PageSize);
 
-        return skills.Select(MapToDto);
+        return new PagedResult<SkillDto>
+        {
+            Items = items.Select(MapToDto),
+            TotalCount = totalCount
+        };
     }
 
     public async Task<SkillDto> GetSkillByIdAsync(int id)
